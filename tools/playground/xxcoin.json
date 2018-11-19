@@ -1,0 +1,22 @@
+{
+    "name": "xxcoin",
+    "symbol": "MZC",
+    "nameCN": "喵爪币",
+    "platformCoinName": "shellcoin",
+    "platformCoinNameCN": "小贝壳",
+    "platformCoinSymbol": "SC2",
+    "logo": "static/mzc_logo.png",
+    "voteCap": 500000,
+    "balance": 1000.000,
+    "balanceCheckTime": "2018-09-10 12:00:00",
+    "shortDescription": "This is short description",
+    "longDescription": "This is long description",
+    "issuer": "喵爪网络科技有限公司",
+    "timeOpening": "2018-09-10 12:00:00",
+    "timeClosed": "2018-09-10 12:00:00",
+    "closeReason": "This is close reason",
+    "votingAddress": "1sdfacvklslgurig,dsfsfqer",
+    "seed": "word1 word2 word3 word4 word5",
+    "privateKey": "3w4324wrerq34qwrerqewrqewrqweewqrqwerqwe",
+    "status": "New"
+}

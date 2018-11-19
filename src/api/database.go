@@ -3,9 +3,8 @@ package api
 import (
 	"database/sql"
 	"fmt"
-	"time"
+	"time" // this is required
 
-	// this is required
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -13,9 +12,9 @@ const (
 	refreshTime = time.Minute * 1
 
 	// Database constants
-	dbUser      = "root"
-	dbPassword  = "01Hgko05"
-	dbHost      = "192.168.50.104:3306"
+	dbUser      = "test"
+	dbPassword  = "test" // Note: don't use password that contains special characters like Test#1234
+	dbHost      = "localhost:3306"
 	dbSchema    = "shellpayvote"
 	dbTableName = "project_coins"
 
@@ -30,7 +29,7 @@ const (
 		` SET balance = ? WHERE name = ? `
 
 	sqlUpdateStatus = `UPDATE ` + dbTableName +
-		` SET status = ? WEHRE name = ? `
+		` SET status = ? WHERE name = ? `
 
 	sqlInsertNewCoin = `INSERT INTO ` + dbTableName + `
 	(name, symbol, name_cn, platform_coin_name, platform_coin_name_cn, platform_coin_symbol, logo, vote_cap, 
@@ -74,7 +73,7 @@ func init() {
 
 // updateBalance updates balance every 1 minute
 // updateBalance will use service provided by superwallet.shellpay2.com
-func updateBalance(b float64, coinName string) error {
+func UpdateBalance(b float64, coinName string) error {
 	_, err := dbUpdateBalanceStmt.Exec(b, coinName)
 	if err != nil {
 		return err
@@ -83,7 +82,8 @@ func updateBalance(b float64, coinName string) error {
 	return nil
 }
 
-func addProjectCoin(coin ProjectCoin) error {
+// AddProjectCoin inserts a record into database for a new coin
+func AddProjectCoin(coin ProjectCoin) error {
 
 	_, err := dbInsertStmt.Exec(
 		coin.Name, coin.Symbol, coin.NameCN,
@@ -103,8 +103,8 @@ func addProjectCoin(coin ProjectCoin) error {
 	return nil
 }
 
-// udpateStatus change project coin status from Open to either Closed or Aborted
-func updateStatus(s string, coinName string) error {
+// UpdateStatus change project coin status from Open to either Closed or Aborted
+func UpdateStatus(s string, coinName string) error {
 
 	_, err := dbUpdateStatusStmt.Exec(s, coinName)
 
