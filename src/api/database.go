@@ -36,6 +36,8 @@ const (
 		balance, balance_check_time, short_description, long_description, issuer, time_opening, time_closed, 
 		close_reason, voting_address, seed, private_key, status) 
 		VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+
+	sqlSelect = `SELECT * FROM ` + dbTableName + ` WHERE status = ? `
 )
 
 var (
@@ -43,6 +45,7 @@ var (
 	dbInsertStmt        *sql.Stmt
 	dbUpdateBalanceStmt *sql.Stmt
 	dbUpdateStatusStmt  *sql.Stmt
+	dbSelectStmt        *sql.Stmt
 )
 
 func init() {
@@ -69,6 +72,12 @@ func init() {
 	if err != nil {
 		panic(fmt.Sprintf("failed to create update status statement : %s", err))
 	}
+
+	dbSelectStmt, err = dbInstance.Prepare(sqlSelect)
+	if err != nil {
+		panic(fmt.Sprintf("failed to create select statement: %s", err))
+	}
+
 }
 
 // updateBalance updates balance every 1 minute
@@ -80,6 +89,41 @@ func UpdateBalance(b float64, coinName string) error {
 	}
 
 	return nil
+}
+
+// RetrieveProjectCoins retrieves all project coins with a given status
+func RetrieveProjectCoins(status string) []ProjectCoin {
+	coins := []ProjectCoin{}
+
+	rows, err := dbSelectStmt.Query(status)
+	if err != nil {
+		return coins
+	}
+
+	for rows.Next() {
+		coin := ProjectCoin{}
+		err = rows.Scan(
+			&coin.Name, &coin.Symbol, &coin.NameCN,
+			&coin.PlatformCoinName, &coin.PlatformCoinNameCN, &coin.PlatformCoinSymbol,
+			&coin.Logo, &coin.VoteCap,
+			&coin.Balance, &coin.BalanceCheckTime, // these two coulumns might not be necessary
+			&coin.ShortDescription, &coin.LongDescription,
+			&coin.Issuer,
+			&coin.TimeOpening, &coin.TimeClosed, &coin.CloseReason,
+			&coin.VotingAddress, &coin.Seed, &coin.PrivateKey,
+			&coin.Status)
+
+		if err != nil {
+			// Log error here, please
+			return []ProjectCoin{}
+		}
+
+		// update Balance here
+
+		coins = append(coins, coin)
+	}
+
+	return coins
 }
 
 // AddProjectCoin inserts a record into database for a new coin
