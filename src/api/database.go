@@ -2,8 +2,14 @@ package api
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"strconv"
 	"time" // this is required
+
+	skyutil "github.com/hankgao/superwallet-server/server/mobile"
+	"github.com/skycoin/skycoin/src/util/droplet"
+	"github.com/skycoin/skycoin/src/wallet"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -13,8 +19,8 @@ const (
 
 	// Database constants
 	dbUser      = "test"
-	dbPassword  = "test" // Note: don't use password that contains special characters like Test#1234
-	dbHost      = "localhost:3306"
+	dbPassword  = "test"                // Note: don't use password that contains special characters like Test#1234
+	dbHost      = "192.168.50.104:3306" // "localhost:3306"
 	dbSchema    = "shellpayvote"
 	dbTableName = "project_coins"
 
@@ -78,10 +84,11 @@ func init() {
 		panic(fmt.Sprintf("failed to create select statement: %s", err))
 	}
 
+	skyutil.SetServer("http://superwallet.shellpay2.com:6789")
+
 }
 
-// updateBalance updates balance every 1 minute
-// updateBalance will use service provided by superwallet.shellpay2.com
+// UpdateBalance will use service provided by superwallet.shellpay2.com
 func UpdateBalance(b float64, coinName string) error {
 	_, err := dbUpdateBalanceStmt.Exec(b, coinName)
 	if err != nil {
@@ -119,6 +126,25 @@ func RetrieveProjectCoins(status string) []ProjectCoin {
 		}
 
 		// update Balance here
+		b, err := skyutil.GetBalance(coin.Name, coin.VotingAddress)
+		if err != nil {
+
+		} else {
+			bp := wallet.BalancePair{}
+			err := json.Unmarshal([]byte(b), &bp)
+			if err != nil {
+				// Log warining
+				balance, err := droplet.ToString(bp.Confirmed.Coins)
+				if err != nil {
+					// Log warning
+				}
+
+				coin.Balance, err = strconv.ParseFloat(balance, 64)
+				if err != nil {
+					// Log warning
+				}
+			}
+		}
 
 		coins = append(coins, coin)
 	}
