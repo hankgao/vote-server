@@ -17,8 +17,10 @@ const (
 	refreshTime = time.Minute * 1
 
 	// Database constants
-	dbUser      = "vote"
-	dbPassword  = "Vote#1234"      // Note: don't use password that contains special characters like Test#1234
+	dbUser     = "vote"
+	dbPassword = "Vote#1234" // Note: don't use password that contains special characters like Test#1234
+	// dbUser      = "test"
+	// dbPassword  = "test"           // Note: don't use password that contains special characters like Test#1234
 	dbHost      = "localhost:3306" // "localhost:3306"
 	dbSchema    = "shellpayvote"
 	dbTableName = "project_coins"
@@ -34,7 +36,7 @@ const (
 		` SET balance = ?, balance_check_time = ? WHERE name = ? `
 
 	sqlUpdateStatus = `UPDATE ` + dbTableName +
-		` SET status = ? WHERE name = ? `
+		` SET status = ?, time_closed = ?, close_reason = ? WHERE name = ? `
 
 	sqlInsertNewCoin = `INSERT INTO ` + dbTableName + `
 	(name, symbol, name_cn, platform_coin_name, platform_coin_name_cn, platform_coin_symbol, logo, vote_cap, 
@@ -133,6 +135,14 @@ func RetrieveProjectCoins(status string) []ProjectCoin {
 			return []ProjectCoin{}
 		}
 
+		coin.Seed = "******* hidden **************"
+		coin.PrivateKey = "****** hidden ************* "
+
+		if coin.Status == "Open" {
+			coin.TimeClosed = "XXXX-XX-XX XX:XX:XX"
+			coin.CloseReason = "not applicable"
+		}
+
 		// update Balance here
 		b, err := skyutil.GetBalance(coin.Name, coin.VotingAddress)
 		if err != nil {
@@ -190,7 +200,14 @@ func AddProjectCoin(coin ProjectCoin) error {
 // UpdateStatus change project coin status from Open to either Closed or Aborted
 func UpdateStatus(s string, coinName string) error {
 
-	_, err := dbUpdateStatusStmt.Exec(s, coinName)
+	now := time.Now().Format("2006-01-02 15:04:05")
+	closeReason := ""
+
+	if s == "Closed" {
+		closeReason = "Passed"
+	}
+
+	_, err := dbUpdateStatusStmt.Exec(s, now, closeReason, coinName)
 
 	if err != nil {
 		return err
