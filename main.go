@@ -9,7 +9,9 @@ import (
 	"github.com/gorilla/mux"
 	skyutil "github.com/hankgao/superwallet-server/server/mobile"
 	"github.com/hankgao/vote-server/src/api"
+	"github.com/skycoin/skycoin/src/util/droplet"
 	"github.com/skycoin/skycoin/src/visor"
+	"github.com/skycoin/skycoin/src/wallet"
 )
 
 // endpoints
@@ -48,25 +50,61 @@ func main() {
 		Handler:      r, // Pass our instance of gorilla/mux in.
 	}
 
-	err := srv.ListenAndServe()
-	if err != nil {
-		// log.Errorf("Failed to start server: %s", err)
-	}
-
 	// We need to check balance of every project coin every 1 minute
 	// Once the balance reaches the cap, we change the status from open to closed
 	// then we notify someone of this event,
 	// someone maybe Mr. Fu
 	// he will create an internal asset for that project coin
 	// allow users to deposit and withdraw
-	// balanceCheckTicker := time.NewTicker(time.Minute * 1)
-	// for {
-	// 	select {
-	// 	case <-balanceCheckTicker.C:
-	// 		// updateBalance()
-	// 	}
-	// }
+	go func() {
+		balanceCheckTicker := time.NewTicker(time.Second * 30)
+		for {
+			select {
+			case <-balanceCheckTicker.C:
+				checkBalance()
+			}
+		}
+	}()
 
+	err := srv.ListenAndServe()
+	if err != nil {
+		// log.Errorf("Failed to start server: %s", err)
+	}
+
+}
+
+func checkBalance() {
+	coins := api.RetrieveProjectCoins("Open")
+	for _, c := range coins {
+		balance, err := skyutil.GetBalance(c.PlatformCoinName, c.VotingAddress)
+		if err != nil {
+			// Log warning
+			return
+		}
+
+		bp := wallet.BalancePair{}
+		json.Unmarshal([]byte(balance), &bp)
+
+		bs, err := droplet.ToString(bp.Confirmed.Coins)
+		if err != nil {
+			// Log error
+		}
+
+		fmt.Printf("%s(%s) => %s\n", c.Name, c.PlatformCoinName, bs)
+		if bp.Confirmed.Coins >= uint64(c.VoteCap)*1000000 {
+			// we got enough coins
+			// change the status from Open to Closed
+			err := api.UpdateStatus("Closed", c.Name)
+			if err != nil {
+				// Log warning!
+				return
+			}
+
+			// Notify someone of the event
+
+		}
+
+	}
 }
 
 func getProjectCoins(w http.ResponseWriter, r *http.Request) {
