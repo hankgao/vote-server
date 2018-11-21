@@ -7,11 +7,10 @@ import (
 	"strconv"
 	"time" // this is required
 
+	_ "github.com/go-sql-driver/mysql"
 	skyutil "github.com/hankgao/superwallet-server/server/mobile"
 	"github.com/skycoin/skycoin/src/util/droplet"
 	"github.com/skycoin/skycoin/src/wallet"
-
-	_ "github.com/go-sql-driver/mysql"
 )
 
 const (
@@ -32,7 +31,7 @@ const (
 		COMMENT = 'This table contains all information regarding project coins' `
 
 	sqlUpdateBalance = `UPDATE ` + dbTableName +
-		` SET balance = ? WHERE name = ? `
+		` SET balance = ?, balance_check_time = ? WHERE name = ? `
 
 	sqlUpdateStatus = `UPDATE ` + dbTableName +
 		` SET status = ? WHERE name = ? `
@@ -44,6 +43,8 @@ const (
 		VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	sqlSelect = `SELECT * FROM ` + dbTableName + ` WHERE status = ? `
+
+	sqlSelectByName = `SELECT * FROM ` + dbTableName + ` WHERE name = ? `
 )
 
 var (
@@ -52,6 +53,7 @@ var (
 	dbUpdateBalanceStmt *sql.Stmt
 	dbUpdateStatusStmt  *sql.Stmt
 	dbSelectStmt        *sql.Stmt
+	dbSelectByNameStmt  *sql.Stmt
 )
 
 func init() {
@@ -84,13 +86,19 @@ func init() {
 		panic(fmt.Sprintf("failed to create select statement: %s", err))
 	}
 
+	dbSelectByNameStmt, err = dbInstance.Prepare(sqlSelectByName)
+	if err != nil {
+		panic(fmt.Sprintf("failed to create select by name statement: %s", err))
+	}
+
 	skyutil.SetServer("http://superwallet.shellpay2.com:6789")
 
 }
 
 // UpdateBalance will use service provided by superwallet.shellpay2.com
 func UpdateBalance(b float64, coinName string) error {
-	_, err := dbUpdateBalanceStmt.Exec(b, coinName)
+	now := time.Now()
+	_, err := dbUpdateBalanceStmt.Exec(b, now.Format("2006-01-02 15:04:05"), coinName)
 	if err != nil {
 		return err
 	}
@@ -130,10 +138,10 @@ func RetrieveProjectCoins(status string) []ProjectCoin {
 		if err != nil {
 
 		} else {
+
 			bp := wallet.BalancePair{}
 			err := json.Unmarshal([]byte(b), &bp)
-			if err != nil {
-				// Log warining
+			if err == nil {
 				balance, err := droplet.ToString(bp.Confirmed.Coins)
 				if err != nil {
 					// Log warning
@@ -143,6 +151,12 @@ func RetrieveProjectCoins(status string) []ProjectCoin {
 				if err != nil {
 					// Log warning
 				}
+
+				UpdateBalance(coin.Balance, coin.Name)
+
+			} else {
+				// Log warining
+
 			}
 		}
 
@@ -212,4 +226,29 @@ func CloseDatabaseConn() {
 	if dbInstance != nil {
 		dbInstance.Close()
 	}
+}
+
+func GetProjectCoin(coinName string) ProjectCoin {
+	coin := ProjectCoin{}
+	row := dbSelectByNameStmt.QueryRow(coinName)
+	if row != nil {
+		err := row.Scan(
+			&coin.Name, &coin.Symbol, &coin.NameCN,
+			&coin.PlatformCoinName, &coin.PlatformCoinNameCN, &coin.PlatformCoinSymbol,
+			&coin.Logo, &coin.VoteCap,
+			&coin.Balance, &coin.BalanceCheckTime, // these two coulumns might not be necessary
+			&coin.ShortDescription, &coin.LongDescription,
+			&coin.Issuer,
+			&coin.TimeOpening, &coin.TimeClosed, &coin.CloseReason,
+			&coin.VotingAddress, &coin.Seed, &coin.PrivateKey,
+			&coin.Status)
+
+		if err != nil {
+			// Log warning
+		}
+	} else {
+		// Log warning
+	}
+
+	return coin
 }

@@ -1,12 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/mux"
-
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/hankgao/vote-server/src/api"
 )
 
 // endpoints
@@ -23,7 +23,13 @@ var (
 func main() {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/projectcoins", getProjectCoins)
+	// /api/projectcoins?status=Open
+	r.HandleFunc("/api/projectcoins", getProjectCoins)
+
+	// /api/invoice?coin=mzcoin&txid=skdfkdfkasfwerskdfadsfnas
+	r.HandleFunc("/api/invoice", invoiceHandler)
+	r.PathPrefix("/logo").Handler(http.StripPrefix("/logo", http.FileServer(http.Dir("./logos"))))
+	r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("./dist"))))
 	http.Handle("/", r)
 
 	// start server
@@ -47,16 +53,37 @@ func main() {
 	// someone maybe Mr. Fu
 	// he will create an internal asset for that project coin
 	// allow users to deposit and withdraw
-	balanceCheckTicker := time.NewTicker(time.Minute * 1)
-	for {
-		select {
-		case <-balanceCheckTicker.C:
-			// updateBalance()
-		}
-	}
+	// balanceCheckTicker := time.NewTicker(time.Minute * 1)
+	// for {
+	// 	select {
+	// 	case <-balanceCheckTicker.C:
+	// 		// updateBalance()
+	// 	}
+	// }
 
 }
 
 func getProjectCoins(w http.ResponseWriter, r *http.Request) {
+	status := "Open"
 
+	coins := api.RetrieveProjectCoins(status)
+
+	coinsJson, err := json.MarshalIndent(coins, "", "")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(coinsJson)
+}
+
+func invoiceHandler(w http.ResponseWriter, r *http.Request) {
+	// vars := mux.Vars(r)
+
+	// coinName := vars["coin"]
+	// txID := vars["txid"]
+
+	// coin := api.GetProjectCoin(coinName)
+
+	w.Write([]byte("Yeah, this is invoice handler!"))
 }
