@@ -24,6 +24,9 @@ var (
 )
 
 func main() {
+
+	defer api.CloseDatabaseConn()
+
 	r := mux.NewRouter()
 
 	// /api/projectcoins?status=Open
@@ -115,12 +118,15 @@ func invoiceHandler(w http.ResponseWriter, r *http.Request) {
 
 	for _, o := range readableTx.Out {
 		if o.Address == coin.VotingAddress {
+
+			timeStamp := time.Unix(int64(readableTx.Timestamp), 0)
+
 			// We do find the transaction
 			res := struct {
 				Time  string `json:"time"`
 				Coins string `json:"coins"`
 			}{
-				Time:  "2018-10-20 14:00:00",
+				Time:  timeStamp.Format("2006-01-02 15:04:05"),
 				Coins: o.Coins,
 			}
 
