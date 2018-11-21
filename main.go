@@ -2,11 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/mux"
+	skyutil "github.com/hankgao/superwallet-server/server/mobile"
 	"github.com/hankgao/vote-server/src/api"
+	"github.com/skycoin/skycoin/src/visor"
 )
 
 // endpoints
@@ -64,7 +67,9 @@ func main() {
 }
 
 func getProjectCoins(w http.ResponseWriter, r *http.Request) {
-	status := "Open"
+
+	values := r.URL.Query()
+	status := values.Get("status")
 
 	coins := api.RetrieveProjectCoins(status)
 
@@ -78,12 +83,60 @@ func getProjectCoins(w http.ResponseWriter, r *http.Request) {
 }
 
 func invoiceHandler(w http.ResponseWriter, r *http.Request) {
-	// vars := mux.Vars(r)
+	// /api/invoice?coin=mzcoin&txid=skdfkdfkasfwerskdfadsfnas
+	values := r.URL.Query()
+	coinName := values.Get("coin")
+	txID := values.Get("txid")
 
-	// coinName := vars["coin"]
-	// txID := vars["txid"]
+	coin := api.GetProjectCoin(coinName)
 
-	// coin := api.GetProjectCoin(coinName)
+	if coin.Name == "" {
+		// Log error here
+		w.Write([]byte(fmt.Sprintf("not found - %s not found", coinName)))
+		return
+	}
 
-	w.Write([]byte("Yeah, this is invoice handler!"))
+	transaction, err := skyutil.GetTransaction(coin.PlatformCoinName, txID)
+	if err != nil {
+		// Log error
+		w.Write([]byte("not found - failed to call get transaction"))
+		return
+	}
+
+	readableTx := visor.ReadableTransaction{}
+	err = json.Unmarshal([]byte(transaction), &readableTx)
+	if err != nil {
+		// Not a valid transaction response
+		// We assume that the transaction is not found
+		w.Write([]byte("not found - txid not found"))
+		return
+
+	}
+
+	for _, o := range readableTx.Out {
+		if o.Address == coin.VotingAddress {
+			// We do find the transaction
+			res := struct {
+				Time  string `json:"time"`
+				Coins string `json:"coins"`
+			}{
+				Time:  "2018-10-20 14:00:00",
+				Coins: o.Coins,
+			}
+
+			resJSON, err := json.Marshal(res)
+			if err != nil {
+				// Log error
+				w.Write([]byte("not found - failed to do JSON marshal"))
+				return
+			}
+
+			w.Write(resJSON)
+			return
+
+		}
+	}
+
+	w.Write([]byte("not found - coins not deposited to voting address"))
+
 }
