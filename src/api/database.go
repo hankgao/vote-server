@@ -17,10 +17,10 @@ const (
 	refreshTime = time.Minute * 1
 
 	// Database constants
-	dbUser     = "vote"
-	dbPassword = "Vote#1234" // Note: don't use password that contains special characters like Test#1234
-	// dbUser      = "test"
-	// dbPassword  = "test"           // Note: don't use password that contains special characters like Test#1234
+	// dbUser     = "vote"
+	// dbPassword = "Vote#1234" // Note: don't use password that contains special characters like Test#1234
+	dbUser      = "test"
+	dbPassword  = "test"           // Note: don't use password that contains special characters like Test#1234
 	dbHost      = "localhost:3306" // "localhost:3306"
 	dbSchema    = "shellpayvote"
 	dbTableName = "project_coins"
@@ -178,6 +178,18 @@ func RetrieveProjectCoins(status string) []ProjectCoin {
 
 // AddProjectCoin inserts a record into database for a new coin
 func AddProjectCoin(coin ProjectCoin) error {
+
+	if coin.TimeClosed == "" {
+		coin.TimeClosed = "2010-10-10 10:10:10"
+	}
+
+	if coin.TimeOpening == "" {
+		coin.TimeOpening = "2010-10-10 10:10:10"
+	}
+
+	if coin.BalanceCheckTime == "" {
+		coin.BalanceCheckTime = "2010-10-10 10:10:10"
+	}
 
 	_, err := dbInsertStmt.Exec(
 		coin.Name, coin.Symbol, coin.NameCN,

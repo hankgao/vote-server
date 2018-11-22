@@ -39,18 +39,30 @@ type ProjectCoin struct {
 	Status             string  `json:"status"` // New, Open, Closed, Aborted
 }
 
-// Load from a JSON file
-func (coin *ProjectCoin) Load(fn string) error {
+type ProjectCoins []ProjectCoin
 
+func (coins *ProjectCoins) Load(fn string) error {
 	bytes, err := ioutil.ReadFile(fn)
 	if err != nil {
 		return err
 	}
 
-	err = json.Unmarshal(bytes, coin)
+	err = json.Unmarshal(bytes, coins)
 	if err != nil {
 		return err
 	}
+
+	for _, coin := range *coins {
+		err = coin.FillAddressIfRequired()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (coin *ProjectCoin) FillAddressIfRequired() error {
 
 	if coin.VotingAddress != "" && coin.PrivateKey == "" {
 		return fmt.Errorf("private key is blank while address is present")
@@ -78,6 +90,24 @@ func (coin *ProjectCoin) Load(fn string) error {
 		coin.PrivateKey = nar.Addrs[0].Secret
 
 	}
+
+	return nil
+}
+
+// Load from a JSON file
+func (coin *ProjectCoin) Load(fn string) error {
+
+	bytes, err := ioutil.ReadFile(fn)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(bytes, coin)
+	if err != nil {
+		return err
+	}
+
+	coin.FillAddressIfRequired()
 
 	return nil
 }

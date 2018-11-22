@@ -5,19 +5,19 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/hankgao/vote-server/src/api"
 )
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Printf("Usage: pjc <xxx.json>\n")
-		return
-	}
+	// if len(os.Args) < 2 {
+	// 	fmt.Printf("Usage: pjc <xxx.json>\n")
+	// 	return
+	// }
 	// load from a JSON file
-	coin := api.ProjectCoin{}
-	err := coin.Load(os.Args[1])
+	coins := api.ProjectCoins{}
+	// err := coins.Load(os.Args[1])
+	err := coins.Load("xxcoin.json")
 
 	if err != nil {
 		fmt.Printf("failed to load project coin: %s\n", err)
@@ -25,10 +25,13 @@ func main() {
 	}
 
 	// Insert the newly loaded coin into database
-	err = api.AddProjectCoin(coin)
-	if err != nil {
-		fmt.Printf("failed to add project coin: %s\n", err)
-		return
+	for _, coin := range coins {
+		err = api.AddProjectCoin(coin)
+		if err != nil {
+			fmt.Printf("failed to add project coin: %s\n", err)
+			return
+		}
+
 	}
 
 }

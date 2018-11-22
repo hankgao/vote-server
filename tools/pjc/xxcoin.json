@@ -1,5 +1,38 @@
+[{
+    "name": "coin1",
+    "symbol": "MZC",
+    "nameCN": "喵爪币",
+    "platformCoinName": "shellcoin",
+    "platformCoinNameCN": "小贝壳",
+    "platformCoinSymbol": "SC2",
+    "logo": "mzc_logo.png",
+    "voteCap": 500000,
+    "balance": 1000.000,
+    "balanceCheckTime": "",
+    "shortDescription": "",
+    "longDescription": "{
+        "overview": "太阳币具有两种形式的工作量证明。一种是传统的与数字货币有关的密码学工作量证明。另一种是一项经第三方验证的仪表读数，代表生产出的1兆瓦时的太阳能电力。太阳币以公平的方式使用这两种工作量证明发行，作为一种对太阳能电力生产的报酬。居住在屋顶安装有太阳能电池板的住宅的个人或者大型的太阳能发电场（租用的或者贷款建造的）都可以索取太阳币。",
+        "votingrules" : "1.每期投票活动，由Bibox项目审核团队从官网收集到的上币申请资料中，筛选出 9个优质项目列入备选项目名单。
+    2.按照“票数优先、人数优先、时间优先”的原则排名；投票数相同时，投票人数高的项目胜出，以此类推，选出2个胜出项目上线交易。
+    3.在投票活动结束后，Bibox会对胜出项目进行投票数据排查分析，一旦查实参选项目存在违反活动公平原则的作弊行为，将立即取消上币资格。
+    4.在确保数据真实和准确后，发布项目胜出公告。
+    5.本期投票活动中未入选项目，自活动结束公告发布当日，原路退回用户投票所支付的BIX，以保证参与下一期投票的项目起点一致。
+    6.本期未入选项目，可选择继续或者退出投票活动。选择继续参与下期投票的项目，保证金不退；选择退出，项目预缴保证金将在2个工作日内全部原路退还。
+    7.每个项目可以参与5期投票上币活动，若均所投未胜出，若均所投未胜出，若均所投未胜出，若均所投未胜出，若均所投未胜出，若均所投未胜出，那么该项目将失去投票上币资格，我们会原路退回项目预缴的保证金及当期用户投票所支付的BIX。",
+        "issuer": "SLR（太阳币）创立于2014年，是一种基于区块链的数字货币，主要通过向可核实的太阳能发电商发放数字货币来激励发电，发电一兆瓦可获得 1 太阳币。目前，太阳币在欧洲、南北美洲、澳大利亚、日本和印度等许多发达太阳能市场中较受欢迎。",
+        "parameters":"随着太阳币价格的上涨，越来越多的用户开始交易太阳币；Smappee 等一些智能家居解决方案提供商也在与 SolarCoin 合作，允许房屋业主自由交换太阳能电力。这都能为太阳能发电商带来收益，从而激励其投入更多的发电设施。"
+    }",
+    "issuer": "喵爪网络科技有限公司",
+    "timeOpening": "",
+    "timeClosing": "",
+    "closeReason": "",
+    "votingAddress": "",
+    "seed": "",
+    "privateKey": "",
+    "status": "New"
+},
 {
-    "name": "mzcoin",
+    "name": "coin2",
     "symbol": "MZC",
     "nameCN": "喵爪币",
     "platformCoinName": "shellcoin",
@@ -18,5 +51,72 @@
     "votingAddress": "",
     "seed": "",
     "privateKey": "",
-    "status": "New"
+    "status": "Closed"
+},
+{
+    "name": "coin3",
+    "symbol": "MZC",
+    "nameCN": "喵爪币",
+    "platformCoinName": "shellcoin",
+    "platformCoinNameCN": "小贝壳",
+    "platformCoinSymbol": "SC2",
+    "logo": "mzc_logo.png",
+    "voteCap": 500000,
+    "balance": 1000.000,
+    "balanceCheckTime": "",
+    "shortDescription": "",
+    "longDescription": "",
+    "issuer": "喵爪网络科技有限公司",
+    "timeOpening": "",
+    "timeClosing": "",
+    "closeReason": "",
+    "votingAddress": "",
+    "seed": "",
+    "privateKey": "",
+    "status": "Closed"
+},
+{
+    "name": "coin4",
+    "symbol": "MZC",
+    "nameCN": "喵爪币",
+    "platformCoinName": "shellcoin",
+    "platformCoinNameCN": "小贝壳",
+    "platformCoinSymbol": "SC2",
+    "logo": "mzc_logo.png",
+    "voteCap": 500000,
+    "balance": 1000.000,
+    "balanceCheckTime": "",
+    "shortDescription": "",
+    "longDescription": "",
+    "issuer": "喵爪网络科技有限公司",
+    "timeOpening": "",
+    "timeClosing": "",
+    "closeReason": "",
+    "votingAddress": "",
+    "seed": "",
+    "privateKey": "",
+    "status": "Closed"
+},
+{
+    "name": "coin5",
+    "symbol": "MZC",
+    "nameCN": "喵爪币",
+    "platformCoinName": "shellcoin",
+    "platformCoinNameCN": "小贝壳",
+    "platformCoinSymbol": "SC2",
+    "logo": "mzc_logo.png",
+    "voteCap": 500000,
+    "balance": 1000.000,
+    "balanceCheckTime": "",
+    "shortDescription": "",
+    "longDescription": "",
+    "issuer": "喵爪网络科技有限公司",
+    "timeOpening": "",
+    "timeClosing": "",
+    "closeReason": "",
+    "votingAddress": "",
+    "seed": "",
+    "privateKey": "",
+    "status": "Closed"
 }
+]
