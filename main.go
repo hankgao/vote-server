@@ -27,6 +27,11 @@ var (
 	serverPort = "6789"
 )
 
+type ErrorResponse struct {
+	Status string `json:"status"` // failed
+	Msg    string `json:"msg"`
+}
+
 func init() {
 	log.SetLevel(log.InfoLevel)
 }
@@ -145,11 +150,25 @@ func getProjectCoins(w http.ResponseWriter, r *http.Request) {
 
 	coinsJson, err := json.MarshalIndent(coins, "", "    ")
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		respondErrorMsg(w, err.Error())
 		return
 	}
 
 	w.Write(coinsJson)
+
+}
+
+func respondErrorMsg(w http.ResponseWriter, msg string) error {
+	er := ErrorResponse{
+		Status: "failed",
+		Msg:    msg,
+	}
+
+	bytesR, _ := json.MarshalIndent(er, "", "    ")
+
+	w.Write(bytesR)
+
+	return nil
 }
 
 func invoiceHandler(w http.ResponseWriter, r *http.Request) {
@@ -165,14 +184,15 @@ func invoiceHandler(w http.ResponseWriter, r *http.Request) {
 
 	if coin.Name == "" {
 		log.Error("failed to call GetProjectCoin for ", coinName)
-		w.Write([]byte(fmt.Sprintf("not found - %s not found", coinName)))
+		respondErrorMsg(w, fmt.Sprintf("failed to call GtProjectCoin for %s", coinName))
+
 		return
 	}
 
 	transaction, err := skyutil.GetTransaction(coin.PlatformCoinName, txID)
 	if err != nil {
 		log.Error("failed to call GetTransaction for ", coin.PlatformCoinName, "with txid=", txID)
-		w.Write([]byte("not found - failed to call get transaction"))
+		respondErrorMsg(w, fmt.Sprintf("failed to call GetTransaction for %s with txid=%s", coin.PlatformCoinName, txID))
 		return
 	}
 
@@ -183,7 +203,7 @@ func invoiceHandler(w http.ResponseWriter, r *http.Request) {
 		// We assume that the transaction is not found
 		log.Warn("failed to find txid ", txID, "coin: ", coin.PlatformCoinName, "=>", err)
 		log.Warn(transaction)
-		w.Write([]byte("not found - txid not found: " + err.Error()))
+		respondErrorMsg(w, fmt.Sprintf("txid %s not found", txID))
 		return
 
 	}
@@ -202,10 +222,10 @@ func invoiceHandler(w http.ResponseWriter, r *http.Request) {
 				Coins: o.Coins,
 			}
 
-			resJSON, err := json.Marshal(res)
+			resJSON, err := json.MarshalIndent(res, "", "    ")
 			if err != nil {
 				log.Error("failed to marshal ", res)
-				w.Write([]byte("not found - failed to do JSON marshal"))
+				respondErrorMsg(w, fmt.Sprintf("failed to marshal: %s", err.Error()))
 				return
 			}
 
@@ -215,6 +235,6 @@ func invoiceHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	w.Write([]byte("not found - coins not deposited to voting address"))
+	respondErrorMsg(w, fmt.Sprintf("coins were not deposited to the voting address"))
 
 }
