@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
 	skyutil "github.com/hankgao/superwallet-server/server/mobile"
 	"github.com/hankgao/vote-server/src/api"
+	log "github.com/sirupsen/logrus"
 	"github.com/skycoin/skycoin/src/util/droplet"
 	"github.com/skycoin/skycoin/src/visor"
 	"github.com/skycoin/skycoin/src/wallet"
@@ -24,6 +26,10 @@ var (
 	nodeServer = "http://localhost"
 	serverPort = "6789"
 )
+
+func init() {
+	log.SetLevel(log.InfoLevel)
+}
 
 func main() {
 
@@ -57,7 +63,7 @@ func main() {
 	// he will create an internal asset for that project coin
 	// allow users to deposit and withdraw
 	go func() {
-		balanceCheckTicker := time.NewTicker(time.Second * 30)
+		balanceCheckTicker := time.NewTicker(time.Second * 60)
 		for {
 			select {
 			case <-balanceCheckTicker.C:
@@ -78,7 +84,7 @@ func checkBalance() {
 	for _, c := range coins {
 		balance, err := skyutil.GetBalance(c.PlatformCoinName, c.VotingAddress)
 		if err != nil {
-			// Log warning
+			log.Error("failed to call GetBalance: ", err)
 			return
 		}
 
@@ -87,20 +93,28 @@ func checkBalance() {
 
 		bs, err := droplet.ToString(bp.Confirmed.Coins)
 		if err != nil {
-			// Log error
+			log.Error("failed to convert droplets to float64 string", bp.Confirmed.Coins)
 		}
 
-		fmt.Printf("%s(%s) => %s\n", c.Name, c.PlatformCoinName, bs)
+		bal, err := strconv.ParseFloat(bs, 64)
+		if err != nil {
+			log.Error("failed to parse float from ", bs)
+		} else {
+			api.UpdateBalance(bal, c.Name)
+
+		}
+
 		if bp.Confirmed.Coins >= uint64(c.VoteCap)*1000000 {
 			// we got enough coins
 			// change the status from Open to Closed
 			err := api.UpdateStatus("Closed", c.Name)
 			if err != nil {
-				// Log warning!
+				log.Error("failed to update status from Open to Close for ", c.Name)
 				return
 			}
 
 			// Notify someone of the event
+			log.Info("status is changed from Open to Closed for ", c.Name)
 
 		}
 
@@ -111,6 +125,8 @@ func checkBalance() {
 // Will check name first
 //
 func getProjectCoins(w http.ResponseWriter, r *http.Request) {
+
+	log.Info("GET /api/projectCoins?", r.URL.RawQuery)
 
 	coins := api.ProjectCoins{}
 
@@ -137,6 +153,9 @@ func getProjectCoins(w http.ResponseWriter, r *http.Request) {
 }
 
 func invoiceHandler(w http.ResponseWriter, r *http.Request) {
+
+	log.Info("GET /api/invoice?", r.URL.RawQuery)
+
 	// /api/invoice?coin=mzcoin&txid=skdfkdfkasfwerskdfadsfnas
 	values := r.URL.Query()
 	coinName := values.Get("coin")
@@ -145,14 +164,14 @@ func invoiceHandler(w http.ResponseWriter, r *http.Request) {
 	coin := api.GetProjectCoin(coinName)
 
 	if coin.Name == "" {
-		// Log error here
+		log.Error("failed to call GetProjectCoin for ", coinName)
 		w.Write([]byte(fmt.Sprintf("not found - %s not found", coinName)))
 		return
 	}
 
 	transaction, err := skyutil.GetTransaction(coin.PlatformCoinName, txID)
 	if err != nil {
-		// Log error
+		log.Error("failed to call GetTransaction for ", coin.PlatformCoinName, "with txid=", txID)
 		w.Write([]byte("not found - failed to call get transaction"))
 		return
 	}
@@ -162,6 +181,7 @@ func invoiceHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// Not a valid transaction response
 		// We assume that the transaction is not found
+		log.Warn("failed to find txid ", txID, "coin: ", coin.PlatformCoinName)
 		w.Write([]byte("not found - txid not found"))
 		return
 
@@ -183,7 +203,7 @@ func invoiceHandler(w http.ResponseWriter, r *http.Request) {
 
 			resJSON, err := json.Marshal(res)
 			if err != nil {
-				// Log error
+				log.Error("failed to marshal ", res)
 				w.Write([]byte("not found - failed to do JSON marshal"))
 				return
 			}
