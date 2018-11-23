@@ -107,14 +107,27 @@ func checkBalance() {
 	}
 }
 
+// Note that name and status cannot coexist
+// Will check name first
+//
 func getProjectCoins(w http.ResponseWriter, r *http.Request) {
 
+	coins := api.ProjectCoins{}
+
 	values := r.URL.Query()
-	status := values.Get("status")
 
-	coins := api.RetrieveProjectCoins(status)
+	status := ""
+	coinName := values.Get("name")
 
-	coinsJson, err := json.MarshalIndent(coins, "", "")
+	if coinName == "" {
+		status = values.Get("status")
+		coins = api.RetrieveProjectCoins(status)
+	} else {
+		coin := api.GetProjectCoin(coinName)
+		coins = append(coins, coin)
+	}
+
+	coinsJson, err := json.MarshalIndent(coins, "", "    ")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

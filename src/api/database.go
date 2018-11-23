@@ -17,10 +17,8 @@ const (
 	refreshTime = time.Minute * 1
 
 	// Database constants
-	// dbUser     = "vote"
-	// dbPassword = "Vote#1234" // Note: don't use password that contains special characters like Test#1234
-	dbUser      = "test"
-	dbPassword  = "test"           // Note: don't use password that contains special characters like Test#1234
+	dbUser      = "vote"
+	dbPassword  = "Vote#1234"      // Note: don't use password that contains special characters like Test#1234
 	dbHost      = "localhost:3306" // "localhost:3306"
 	dbSchema    = "shellpayvote"
 	dbTableName = "project_coins"
@@ -250,6 +248,14 @@ func CloseDatabaseConn() {
 
 	if dbUpdateBalanceStmt != nil {
 		dbUpdateBalanceStmt.Close()
+	}
+
+	if dbSelectByNameStmt != nil {
+		dbSelectByNameStmt.Close()
+	}
+
+	if dbSelectStmt != nil {
+		dbSelectStmt.Close()
 	}
 
 	if dbInstance != nil {
