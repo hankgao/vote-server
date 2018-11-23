@@ -182,6 +182,7 @@ func invoiceHandler(w http.ResponseWriter, r *http.Request) {
 		// Not a valid transaction response
 		// We assume that the transaction is not found
 		log.Warn("failed to find txid ", txID, "coin: ", coin.PlatformCoinName, "=>", err)
+		log.Warn(transaction)
 		w.Write([]byte("not found - txid not found: " + err.Error()))
 		return
 
