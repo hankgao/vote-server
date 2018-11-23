@@ -97,7 +97,8 @@ func init() {
 
 // UpdateBalance will use service provided by superwallet.shellpay2.com
 func UpdateBalance(b float64, coinName string) error {
-	now := time.Now()
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	now := time.Now().In(loc)
 	_, err := dbUpdateBalanceStmt.Exec(b, now.Format("2006-01-02 15:04:05"), coinName)
 	if err != nil {
 		return err
@@ -178,11 +179,11 @@ func RetrieveProjectCoins(status string) []ProjectCoin {
 func AddProjectCoin(coin ProjectCoin) error {
 
 	if coin.TimeClosed == "" {
-		coin.TimeClosed = "2010-10-10 10:10:10"
+		coin.TimeClosed = "2099-10-10 10:10:10"
 	}
 
 	if coin.TimeOpening == "" {
-		coin.TimeOpening = "2010-10-10 10:10:10"
+		coin.TimeOpening = "2099-10-10 10:10:10"
 	}
 
 	if coin.BalanceCheckTime == "" {
@@ -209,8 +210,8 @@ func AddProjectCoin(coin ProjectCoin) error {
 
 // UpdateStatus change project coin status from Open to either Closed or Aborted
 func UpdateStatus(s string, coinName string) error {
-
-	now := time.Now().Format("2006-01-02 15:04:05")
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	now := time.Now().In(loc).Format("2006-01-02 15:04:05")
 	closeReason := ""
 
 	if s == "Closed" {

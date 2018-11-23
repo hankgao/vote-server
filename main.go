@@ -211,7 +211,8 @@ func invoiceHandler(w http.ResponseWriter, r *http.Request) {
 	for _, o := range readableTx.Out {
 		if o.Address == coin.VotingAddress {
 
-			timeStamp := time.Unix(int64(readableTx.Timestamp), 0)
+			loc, _ := time.LoadLocation("Asia/Shanghai")
+			timeStamp := time.Unix(int64(readableTx.Timestamp), 0).In(loc)
 
 			// We do find the transaction
 			res := struct {
