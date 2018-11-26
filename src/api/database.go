@@ -17,9 +17,6 @@ const (
 	refreshTime = time.Minute * 1
 
 	// Database constants
-	dbUser      = "vote"
-	dbPassword  = "Vote#1234"      // Note: don't use password that contains special characters like Test#1234
-	dbHost      = "localhost:3306" // "localhost:3306"
 	dbSchema    = "shellpayvote"
 	dbTableName = "project_coins"
 
@@ -48,6 +45,10 @@ const (
 )
 
 var (
+	dbUser     = "vote"
+	dbPassword = "Vote#1234"      // Note: don't use password that contains special characters like Test#1234
+	dbHost     = "localhost:3306" // "localhost:3306"
+
 	dbInstance          *sql.DB
 	dbInsertStmt        *sql.Stmt
 	dbUpdateBalanceStmt *sql.Stmt
@@ -56,7 +57,8 @@ var (
 	dbSelectByNameStmt  *sql.Stmt
 )
 
-func init() {
+// PrepareDatabase prepares databases for further operations
+func PrepareDatabase() {
 	// create a DB connection
 	conn := fmt.Sprintf("%s:%s@tcp(%s)/%s",
 		dbUser, dbPassword, dbHost, dbSchema)
@@ -93,6 +95,13 @@ func init() {
 
 	skyutil.SetServer("http://superwallet.shellpay2.com:6789")
 
+}
+
+// SetParams set parameters
+func SetParams(user, password, host string) {
+	dbUser = user
+	dbPassword = password // Note: don't use password that contains special characters like Test#1234
+	dbHost = host
 }
 
 // UpdateBalance will use service provided by superwallet.shellpay2.com
@@ -264,6 +273,7 @@ func CloseDatabaseConn() {
 	}
 }
 
+// GetProjectCoin return coin coinName
 func GetProjectCoin(coinName string) ProjectCoin {
 	coin := ProjectCoin{}
 	row := dbSelectByNameStmt.QueryRow(coinName)

@@ -16,6 +16,10 @@ func main() {
 	// }
 	// load from a JSON file
 	coins := api.ProjectCoins{}
+
+	api.SetParams("vote", "Vote#1234", "23.106.130.13:3306")
+	api.PrepareDatabase()
+
 	// err := coins.Load(os.Args[1])
 	err := coins.Load("xxcoin.json")
 

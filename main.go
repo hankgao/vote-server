@@ -27,6 +27,7 @@ var (
 	serverPort = "6789"
 )
 
+// ErrorResponse represents an error response
 type ErrorResponse struct {
 	Status string `json:"status"` // failed
 	Msg    string `json:"msg"`
@@ -37,6 +38,10 @@ func init() {
 }
 
 func main() {
+
+	// Prepare database
+	api.SetParams("vote", "Vote#1234", "shellpayvote.com:3306")
+	api.PrepareDatabase()
 
 	defer api.CloseDatabaseConn()
 
@@ -148,13 +153,13 @@ func getProjectCoins(w http.ResponseWriter, r *http.Request) {
 		coins = append(coins, coin)
 	}
 
-	coinsJson, err := json.MarshalIndent(coins, "", "    ")
+	coinJSON, err := json.MarshalIndent(coins, "", "    ")
 	if err != nil {
 		respondErrorMsg(w, err.Error())
 		return
 	}
 
-	w.Write(coinsJson)
+	w.Write(coinJSON)
 
 }
 

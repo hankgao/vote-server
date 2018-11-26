@@ -39,8 +39,10 @@ type ProjectCoin struct {
 	Status             string  `json:"status"` // New, Open, Closed, Aborted
 }
 
+// ProjectCoins ProjectCoin slice
 type ProjectCoins []ProjectCoin
 
+// Load load a collection of project coins
 func (coins *ProjectCoins) Load(fn string) error {
 	bytes, err := ioutil.ReadFile(fn)
 	if err != nil {
@@ -62,6 +64,7 @@ func (coins *ProjectCoins) Load(fn string) error {
 	return nil
 }
 
+// FillAddressIfRequired fill voting addres, seed, and prviate key, if required
 func (coin *ProjectCoin) FillAddressIfRequired() error {
 
 	if coin.VotingAddress != "" && coin.PrivateKey == "" {
